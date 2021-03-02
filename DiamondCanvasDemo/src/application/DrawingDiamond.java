@@ -13,9 +13,12 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Shape;
 import javafx.scene.transform.Translate;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
@@ -56,8 +59,9 @@ public class DrawingDiamond  extends Application {
 			
 			
 			gc = diamond.getGraphicsContext2D();
-			gc.setStroke(Color.CADETBLUE);
+			gc.setStroke(Color.BLACK);
 			gc.setLineWidth(2);
+			gc.setFill(Color.BROWN);
 			Point2D topLinePoint1 = new Point2D(203,165);
 			Point2D topLinePoint2 = new Point2D(397,165);
 			Point2D firstMiddleLinePoint1 = new Point2D(140,245);
@@ -68,59 +72,83 @@ public class DrawingDiamond  extends Application {
 			Point2D topLineMidPoint = topLinePoint1.midpoint(topLinePoint2);
 			Point2D firstMiddleLineMidPoint = firstMiddleLinePoint1.midpoint(firstMiddleLinePoint2);
 			Point2D secondMiddleLineMidPoint = secondMiddleLinePoint1.midpoint(secondMiddleLinePoint2);
-			Line crownHeight = new Line();
+			Line crownHeightLine = new Line();
 			//Line2D crownLine = new Line2D();
-			crownHeight.setStartX(topLineMidPoint.getX());
-			crownHeight.setStartY(topLineMidPoint.getY());
-			crownHeight.setEndX(firstMiddleLineMidPoint.getX());
-			crownHeight.setEndY(firstMiddleLineMidPoint.getY());
+			crownHeightLine.setStartX(topLineMidPoint.getX());
+			crownHeightLine.setStartY(topLineMidPoint.getY());
+			crownHeightLine.setEndX(firstMiddleLineMidPoint.getX());
+			crownHeightLine.setEndY(firstMiddleLineMidPoint.getY());
 			//gc.strokeLine(crownHeight.getStartX(), crownHeight.getStartY(), crownHeight.getEndX(), crownHeight.getEndY()); // crown height
 			
-			Line girdleHeight = new Line();
-			girdleHeight.setStartX(firstMiddleLineMidPoint.getX());
-			girdleHeight.setStartY(firstMiddleLineMidPoint.getY());
-			girdleHeight.setEndX(secondMiddleLineMidPoint.getX());
-			girdleHeight.setEndY(secondMiddleLineMidPoint.getY());
+			Line girdleHeightLine = new Line();
+			girdleHeightLine.setStartX(firstMiddleLineMidPoint.getX());
+			girdleHeightLine.setStartY(firstMiddleLineMidPoint.getY());
+			girdleHeightLine.setEndX(secondMiddleLineMidPoint.getX());
+			girdleHeightLine.setEndY(secondMiddleLineMidPoint.getY());
 			
 			double diameter = firstMiddleLinePoint2.getX() - firstMiddleLinePoint1.getX();
 			double crownAngle = firstMiddleLinePoint1.angle(topLinePoint1);
 			double pavilionAngle = secondMiddleLinePoint1.angle(lastPointPavilionFacet);
+			double crownHeight = firstMiddleLineMidPoint.getX() - topLineMidPoint.getX();
+			double girdleHeight = secondMiddleLineMidPoint.getX() - firstMiddleLineMidPoint.getX();
+			
 			//gc.strokeLine(girdleHeight.getStartX(), girdleHeight.getStartY(), girdleHeight.getEndX(), girdleHeight.getEndY() ); // girdle height
 			
-			gc.strokeLine(203,165,397,165);		// Top part (Line at top of crown) 
-			midPointsCrownTop = getTwoMidPointsForLine(203,165,397,165);
-			//gc.strokeLine(midPointsTop[0], midPointsTop[1], 1, 1); // for testing only
-			//gc.strokeLine(midPointsTop[2], midPointsTop[3], 1, 1); // for testing only
-			gc.strokeLine(140,245,460,245);		// Middle part (Horizontal Line which joins crown with pavilion)
-			midPointsGirdle1 = getTwoMidPointsForLine(140,245,460,245);
-			//gc.strokeLine(midPointsGirdle1[0],midPointsGirdle1[1] , 5, 5); // for testing only
-			//gc.strokeLine(midPointsGirdle1[2],midPointsGirdle1[3] , 5, 5); // for testing only
-			gc.strokeLine(140,260,460,260);		// Middle part (Second Horizontal Line which joins crown with pavilion)
-			midPointsGirdle2 = getTwoMidPointsForLine(140,260,460,260);
-			//gc.strokeLine(midPointsGirdle2[0],midPointsGirdle2[1] , 5, 5); // for testing only
-			//gc.strokeLine(midPointsGirdle2[2],midPointsGirdle2[3] , 5, 5); // for testing only
+			Label lblDiameter = new Label("Enter Diameter: ");
+			Label lblCrownHeight = new Label("Enter Crown Height: ");
+			Label lblGirdleHeight = new Label("Enter Girdle Height: ");
+			Label lblCrownAngle = new Label("Enter Crown Angle: ");
+			Label lblPavilionAngle = new Label("Enter Pavilion Angle");
+			TextField txtDiameter = new TextField();
+			TextField txtCrownHeight = new TextField();
+			TextField txtGirdleHeight = new TextField();
+			TextField txtCrownAngle = new TextField();
+			TextField txtPavilionAngle = new TextField();
+			
+			
+			
+			generateDiamond();
+			// Top part (Line at top of crown) 
+			gc.strokeLine(topLinePoint1.getX(),topLinePoint1.getY(),topLinePoint2.getX(),topLinePoint2.getY());		
+			midPointsCrownTop = getTwoMidPointsForLine(topLinePoint1.getX(),topLinePoint1.getY(),topLinePoint2.getX(),topLinePoint2.getY());
+		
+			
+			// Middle part (Horizontal Line which joins crown with pavilion)
+			gc.strokeLine(firstMiddleLinePoint1.getX(),firstMiddleLinePoint1.getY(),firstMiddleLinePoint2.getX(),firstMiddleLinePoint2.getY());		
+			midPointsGirdle1 = getTwoMidPointsForLine(firstMiddleLinePoint1.getX(),firstMiddleLinePoint1.getY(),firstMiddleLinePoint2.getX(),firstMiddleLinePoint2.getY());
+			
+			
+			// Middle part (Second Horizontal Line which joins crown with pavilion)
+			gc.strokeLine(secondMiddleLinePoint1.getX(),secondMiddleLinePoint1.getY(),secondMiddleLinePoint2.getX(),secondMiddleLinePoint2.getY());		
+			midPointsGirdle2 = getTwoMidPointsForLine(secondMiddleLinePoint1.getX(),secondMiddleLinePoint1.getY(),secondMiddleLinePoint2.getX(),secondMiddleLinePoint2.getY());
+			
+			
+			
 			gc.strokeLine(midPointsCrownTop[0], midPointsCrownTop[1],midPointsGirdle1[0] , midPointsGirdle1[1]); //crown facets
 			gc.strokeLine(midPointsCrownTop[2], midPointsCrownTop[3],midPointsGirdle1[2] , midPointsGirdle1[3]); //crown facets
 			gc.strokeLine(midPointsGirdle1[0], midPointsGirdle1[1], midPointsGirdle2[0], midPointsGirdle2[1]);   //girdle facets
 			gc.strokeLine(midPointsGirdle1[2], midPointsGirdle1[3], midPointsGirdle2[2], midPointsGirdle2[3]);	 //girdle facets
 			
-			gc.strokeLine(midPointsGirdle2[0], midPointsGirdle2[1], 300, 435); // pavilion facets
-			gc.strokeLine(midPointsGirdle2[2], midPointsGirdle2[3], 300, 435); // pavilion facets
+			gc.strokeLine(midPointsGirdle2[0], midPointsGirdle2[1], lastPointPavilionFacet.getX(), lastPointPavilionFacet.getY()); // pavilion facets
+			gc.strokeLine(midPointsGirdle2[2], midPointsGirdle2[3], lastPointPavilionFacet.getX(), lastPointPavilionFacet.getY()); // pavilion facets
+			
 			//gc.beginPath();
 			//gc.appendSVGPath("M299,166 L300,245,300,435"); // Middle part (Vertical Line which joins crown with pavilion)
 			//gc.stroke();
 			//gc.beginPath();
 			//gc.appendSVGPath("M202,165.5 L140,244.5,300,435"); // Left part of whole Diamond
 			//gc.stroke();
-			gc.strokeLine(203, 165, 140, 245);	// Crown start line
-			gc.strokeLine(397, 165, 460, 245);	// Crown last line
-			gc.strokeLine(140, 245, 140, 260);	// Girdle start line
-			gc.strokeLine(460, 245, 460, 260);	// Girdle last line
+			gc.strokeLine(topLinePoint1.getX(), topLinePoint1.getY(), firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());	// Crown start line
+			gc.strokeLine(topLinePoint2.getX(), topLinePoint2.getY(), firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());	// Crown last line
+			gc.strokeLine(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY(), secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY());	// Girdle start line
+			gc.strokeLine(firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY(), secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY());	// Girdle last line
 			
-			gc.strokeLine(140, 260, 300, 435);	// Pavilion start line
-			gc.strokeLine(460, 260, 300, 435);	// Pavilion last line
+			gc.strokeLine(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY(),lastPointPavilionFacet.getX() , lastPointPavilionFacet.getY());	// Pavilion start line
+			gc.strokeLine(secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY(),lastPointPavilionFacet.getX() , lastPointPavilionFacet.getY());	// Pavilion last line
 			
 			
+			//st.getChildren().addAll(diamond,vbCenter);
+			//st.getChildren().addAll(vbCenter,diamond);
 			//gc.strokeLine(300, 0, 300, 720);	// Vertical base line
 			//gc.strokeLine(0, 252.5, 1280, 252.5);// Horizontal base line
 			//gc.beginPath();
@@ -227,6 +255,12 @@ public class DrawingDiamond  extends Application {
 
 
 
+	private void generateDiamond() {
+		
+	}
+
+
+
 	private double[] getTwoMidPointsForLine(double x1, double y1, double x2, double y2) {
 		
 		double topX1;
@@ -244,7 +278,7 @@ public class DrawingDiamond  extends Application {
 	}
 
 
-
+	//StackPane st = new StackPane();
 	Canvas diamond = new Canvas(500,500);
 	GraphicsContext gc; 
 	VBox vbCenter = new VBox();

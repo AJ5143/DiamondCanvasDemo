@@ -14,6 +14,7 @@ public class PointFinder {
 		y = sc.nextDouble();
 		mid = (x+y)/2;
 		System.out.println(mid);
+		
 	}
 
 }
