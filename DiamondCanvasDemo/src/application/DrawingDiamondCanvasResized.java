@@ -1,6 +1,7 @@
 package application;
 
 
+import java.awt.image.BufferedImage;
 import java.time.LocalTime;
 
 import com.sun.javafx.geom.Line2D;
@@ -8,6 +9,7 @@ import com.sun.javafx.geom.Line2D;
 import javafx.application.Application;
 import javafx.beans.property.Property;
 import javafx.beans.property.ReadOnlyProperty;
+import javafx.embed.swing.SwingFXUtils;
 import javafx.geometry.Bounds;
 import javafx.geometry.Point2D;
 import javafx.scene.Scene;
@@ -46,13 +48,17 @@ public class DrawingDiamondCanvasResized extends Application {
 	TextField txtGirdleHeight = new TextField();
 	TextField txtCrownAngle = new TextField();
 	TextField txtPavilionAngle = new TextField();
+	
+	
 	HBox hbDiameter = new HBox(lblDiameter,txtDiameter);
 	HBox hbCrownHeight = new HBox(lblCrownHeight,txtCrownHeight);
 	HBox hbGirdleHeight = new HBox(lblGirdleHeight,txtGirdleHeight);
 	HBox hbCrownAngle = new HBox(lblCrownAngle,txtCrownAngle);
 	HBox hbPavilionAngle = new HBox(lblPavilionAngle,txtPavilionAngle);
 	Button btnGenerateDiamond = new Button("Generate");
-	VBox vbDiamondProperties = new VBox(hbDiameter, hbCrownHeight, hbGirdleHeight, hbCrownAngle, hbPavilionAngle, btnGenerateDiamond);
+	Button btnResetToCenter = new Button("Reset to Center");
+	HBox hbButtons = new HBox(btnGenerateDiamond, btnResetToCenter);
+	VBox vbDiamondProperties = new VBox(hbDiameter, hbCrownHeight, hbGirdleHeight, hbCrownAngle, hbPavilionAngle, hbButtons);
 	
 	
 	BorderPane root = new BorderPane();
@@ -60,6 +66,7 @@ public class DrawingDiamondCanvasResized extends Application {
 	ResizableCanvas canvas = new ResizableCanvas();
 	GraphicsContext gc = canvas.getGraphicsContext2D();
 
+	
 	
 
 	class ResizableCanvas extends Canvas {
@@ -89,12 +96,12 @@ public class DrawingDiamondCanvasResized extends Application {
         }
  
         @Override
-        public double prefWidth(double height) {
+        public double prefWidth(double width) {
             return getWidth();
         }
  
         @Override
-        public double prefHeight(double width) {
+        public double prefHeight(double height) {
             return getHeight();
         }
         
@@ -111,7 +118,19 @@ public class DrawingDiamondCanvasResized extends Application {
 			//root.setCenter(canvas);
 			canvas.widthProperty().bind(root.widthProperty());
 			canvas.heightProperty().bind(root.heightProperty());
-			
+			scene.widthProperty().addListener(e->{
+				canvas.draw();
+				generateDiamondChanged();
+			});
+			scene.heightProperty().addListener(e->{
+				canvas.draw();
+				generateDiamondChanged();
+			});
+			btnResetToCenter.setOnMouseClicked(e->{
+				generateDiamondChanged();
+			});
+			//canvas.widthProperty().bindBidirectional(root.prefWidthProperty());
+			//canvas.heightProperty().bindBidirectional(root.prefHeightProperty());
 			primaryStage.setScene(scene);
 			//primaryStage.sizeToScene();
 			primaryStage.show();
@@ -119,46 +138,112 @@ public class DrawingDiamondCanvasResized extends Application {
 			e.printStackTrace();
 		}
 	}
+
+
+
+	private void generateDiamondChanged() {
+		double diameter = Double.valueOf(txtDiameter.getText());
+		double radius = diameter/2;
+		double crownHeight = Double.valueOf(txtCrownHeight.getText());
+		double girdleHeight = Double.valueOf(txtGirdleHeight.getText());
+		double crownAngle = Double.valueOf(txtCrownAngle.getText());
+		double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
+		double crownAngleInRadions = Math.toRadians(crownAngle);
+		double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
+		gc.clearRect(0, 0, 5000, 5000);
+		generateLines();
+		
+		Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
 	
+		gc.setStroke(Color.CADETBLUE);
+		double[] topLineMidPoints = new double[4];
+		double[] firstMiddleLineMidPoints = new double[4];
+		double[] secondMiddleLineMidPoints = new double[4];
+		
+		
+		Path diamondPath = new Path();
+		diamondPath.setStroke(Color.CADETBLUE);
+		diamondPath.setOpacity(30);
+		
+		MoveTo start = new MoveTo(Center.getX(), Center.getY() - girdleHeight/2);
+		
+		Point2D firstMiddleLinePoint1 = new Point2D(Center.getX() - radius, Center.getY() - girdleHeight/2);
+		Point2D secondMiddleLinePoint1 = new Point2D(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY() + girdleHeight );
+		Point2D secondMiddleLinePoint2 = new Point2D(secondMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint1.getY());
+		Point2D firstMiddleLinePoint2 = new Point2D(firstMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint2.getY() - girdleHeight);
+		Point2D crownHeightEndPoint = new Point2D(Center.getX(), Center.getY() - crownHeight);
+		Point2D topLinePoint1 = new Point2D(crownHeightEndPoint.getX() - (radius) + ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
+		Point2D topLinePoint2 = new Point2D(crownHeightEndPoint.getX() + (radius) - ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
+		Point2D pavilionEndPoint = new Point2D(crownHeightEndPoint.getX(), start.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+		
+		topLineMidPoints = getTwoMidPointsForLine(topLinePoint1.getX(), topLinePoint1.getY(), topLinePoint2.getX(), topLinePoint2.getY());
+		firstMiddleLineMidPoints = getTwoMidPointsForLine(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY(), firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());
+		secondMiddleLineMidPoints = getTwoMidPointsForLine(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY(), secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY());
+		
+		LineTo radius1 = new LineTo(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());
+		LineTo girdleHeightLeftSide = new LineTo(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY());
+		LineTo secondMiddleLine = new LineTo(secondMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint1.getY());
+		LineTo girdleHeightRightSide = new LineTo(firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());
+		LineTo radius2 = new LineTo(Center.getX(), Center.getY() - girdleHeight/2);
+		
+		MoveTo firstMiddleLinePoint2Again = new MoveTo(firstMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint2.getY() - girdleHeight);
+		LineTo crownEndRight = new LineTo(topLinePoint2.getX(), topLinePoint2.getY());
+		LineTo topLine = new LineTo(topLinePoint1.getX(), topLinePoint1.getY());
+		LineTo crownEndLeft =  new LineTo(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());
+		
+		MoveTo secondMiddleLinePoint1Again = new MoveTo(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY());
+		LineTo pavilionLeftSide = new LineTo(pavilionEndPoint.getX(), pavilionEndPoint.getY());
+		LineTo pavilionRightSide = new LineTo(secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY());
+		
+		MoveTo topLineMidPoint1 = new MoveTo(topLineMidPoints[0], topLineMidPoints[1]);
+		LineTo crownFacetLine1 = new LineTo(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1]);
+		LineTo girdleFacetLine1 = new LineTo(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);
+		
+		MoveTo topLineMidPoint2 = new MoveTo(topLineMidPoints[2], topLineMidPoints[3]);
+		LineTo crownFacetLine2 = new LineTo(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3]);
+		LineTo girdleFacetLine2 = new LineTo(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);
+		LineTo pavilionFacetLine2 = new LineTo(pavilionEndPoint.getX(), pavilionEndPoint.getY());
+		LineTo pavilionFacetLine1 = new LineTo(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);
+		diamondPath.getElements().addAll(start, radius1, girdleHeightLeftSide,
+				secondMiddleLine, girdleHeightRightSide, radius2,
+				firstMiddleLinePoint2Again, crownEndRight, topLine,
+				crownEndLeft, secondMiddleLinePoint1Again, pavilionLeftSide,
+				pavilionRightSide, topLineMidPoint1, crownFacetLine1, 
+				girdleFacetLine1, topLineMidPoint2, crownFacetLine2,
+				girdleFacetLine2, pavilionFacetLine2, pavilionFacetLine1);
+		
+		Bounds pathBounds = diamondPath.getLayoutBounds();
+		
+	    WritableImage snapshot = new WritableImage(
+	            (int) pathBounds.getWidth()+2, (int) pathBounds.getHeight());
+	    SnapshotParameters snapshotParams = new SnapshotParameters();
+	    snapshotParams.setFill(Color.TRANSPARENT);
+	    snapshot = diamondPath.snapshot(snapshotParams, snapshot);
+	    //Image diamondImage = (Image) snapshot.getPixelWriter();
+	    //gc.getCanvas().snapshot(snapshotParams, snapshot);
+	    gc.drawImage(snapshot, pathBounds.getMinX(), pathBounds.getMinY());
 	
-	
+		
+	}
+
+
+
 	private void generatePositioning() {
 		
-		
-	}
-
-
-
-	private void generateLines() {
-		//Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
-		//Horizontal Line
-		gc.setStroke(Color.BLACK);
-		gc.strokeLine(0, scene.getHeight()/2, scene.getWidth(), scene.getHeight()/2);
-		//Vertical Line
-		gc.strokeLine(scene.getWidth()/2, 0, scene.getWidth()/2, scene.getHeight());
-	
-	}
-	
-
-
-	@SuppressWarnings("unused")
-	private void generateDiamond() {
-
-		hbDiameter.setSpacing(27);
-		hbCrownHeight.setSpacing(3);
-		hbGirdleHeight.setSpacing(5);
-		hbCrownAngle.setSpacing(7);
-		hbPavilionAngle.setSpacing(5);
-		//root.setLeft(vbDiamondProperties);
-		vbDiamondProperties.setSpacing(3);
-		
-		btnGenerateDiamond.setOnMouseClicked(e->{
+		scene.setOnMouseClicked(e->{
 			double diameter = Double.valueOf(txtDiameter.getText());
+			double radius = diameter/2;
 			double crownHeight = Double.valueOf(txtCrownHeight.getText());
 			double girdleHeight = Double.valueOf(txtGirdleHeight.getText());
-			double radius = diameter/2;
-			Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
-		
+			double crownAngle = Double.valueOf(txtCrownAngle.getText());
+			double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
+			double crownAngleInRadions = Math.toRadians(crownAngle);
+			double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
+			gc.clearRect(0, 0, 5000, 5000);
+			generateLines();
+			
+			Point2D Center = new Point2D(e.getSceneX(), e.getSceneY());
+			
 			gc.setStroke(Color.CADETBLUE);
 			double[] topLineMidPoints = new double[4];
 			double[] firstMiddleLineMidPoints = new double[4];
@@ -176,9 +261,9 @@ public class DrawingDiamondCanvasResized extends Application {
 			Point2D secondMiddleLinePoint2 = new Point2D(secondMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint1.getY());
 			Point2D firstMiddleLinePoint2 = new Point2D(firstMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint2.getY() - girdleHeight);
 			Point2D crownHeightEndPoint = new Point2D(Center.getX(), Center.getY() - crownHeight);
-			Point2D topLinePoint1 = new Point2D(crownHeightEndPoint.getX() - (radius/2), crownHeightEndPoint.getY());
-			Point2D topLinePoint2 = new Point2D(crownHeightEndPoint.getX() + (radius/2), crownHeightEndPoint.getY());
-			Point2D pavilionEndPoint = new Point2D(crownHeightEndPoint.getX(), start.getY() + (crownHeight * 2));
+			Point2D topLinePoint1 = new Point2D(crownHeightEndPoint.getX() - (radius) + ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
+			Point2D topLinePoint2 = new Point2D(crownHeightEndPoint.getX() + (radius) - ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
+			Point2D pavilionEndPoint = new Point2D(crownHeightEndPoint.getX(), start.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
 			
 			topLineMidPoints = getTwoMidPointsForLine(topLinePoint1.getX(), topLinePoint1.getY(), topLinePoint2.getX(), topLinePoint2.getY());
 			firstMiddleLineMidPoints = getTwoMidPointsForLine(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY(), firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());
@@ -202,9 +287,7 @@ public class DrawingDiamondCanvasResized extends Application {
 			MoveTo topLineMidPoint1 = new MoveTo(topLineMidPoints[0], topLineMidPoints[1]);
 			LineTo crownFacetLine1 = new LineTo(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1]);
 			LineTo girdleFacetLine1 = new LineTo(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);
-			//LineTo pavilionFacetLine1 = new LineTo(pavilionEndPoint.getX(), pavilionEndPoint.getX());
-			//MoveTo lastPoint = new MoveTo(pavilionEndPoint.getX(), pavilionEndPoint.getY());
-			//LineTo pavilionFacetLine1 = new LineTo(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);
+			
 			MoveTo topLineMidPoint2 = new MoveTo(topLineMidPoints[2], topLineMidPoints[3]);
 			LineTo crownFacetLine2 = new LineTo(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3]);
 			LineTo girdleFacetLine2 = new LineTo(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);
@@ -221,69 +304,142 @@ public class DrawingDiamondCanvasResized extends Application {
 			Bounds pathBounds = diamondPath.getLayoutBounds();
 			
 		    WritableImage snapshot = new WritableImage(
-		            (int) pathBounds.getWidth(), (int) pathBounds.getHeight());
+		            (int) pathBounds.getWidth()+2, (int) pathBounds.getHeight());
 		    SnapshotParameters snapshotParams = new SnapshotParameters();
-		   
+		    snapshotParams.setFill(Color.TRANSPARENT);
 		    snapshot = diamondPath.snapshot(snapshotParams, snapshot);
 		    //Image diamondImage = (Image) snapshot.getPixelWriter();
-		 
+		    //gc.getCanvas().snapshot(snapshotParams, snapshot);
 		    gc.drawImage(snapshot, pathBounds.getMinX(), pathBounds.getMinY());
-		    //gc.drawImage(diamondImage, pathBounds.getMinX(), pathBounds.getMinY());
-		    
-		    // Image problem starts
-		    //Rectangle rect = new Rectangle();
-		    //rect.prefWidth(diamondPath.getLayoutBounds().getWidth());
-		    //rect.prefHeight(diamondPath.getLayoutBounds().getHeight());
-		    //Shape diamond = Shape.intersect(rect, diamondPath);
-		    //WritableImage diamondImage = diamond.snapshot(new SnapshotParameters(), null);
-//		    Property<Number> property = (Property<Number>) diamondImage.widthProperty();
-//			property.bind(canvas.widthProperty());
-//		    Property<Number> property2 = (Property<Number>) diamondImage.heightProperty();
-//			property2.bind(canvas.heightProperty());
-		    //gc.drawImage(diamondImage, rect.getWidth(), rect.getHeight());
-		    
-		    
-		    //diamond.strokeWidthProperty().bind(scene.widthProperty());
-		    
-		    //Shape Diamond = Shape.subtract(snapshot, diamondPath);
-		    //clearPath(gc, diamondPath);
-			//			System.out.println(firstMiddleLinePoint1.getX());
-//			System.out.println(firstMiddleLinePoint1.getY());
-		   
-			
-			//gc.moveTo(Center.getX(), Center.getY() - girdleHeight/2);
-			//gc.lineTo(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());
-			
-			// radius 1
-			//gc.strokeLine(Center.getX(), Center.getY() - girdleHeight/2, firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());
-			// girdle height (at left side)
-			//gc.strokeLine(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY(), secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY());
-			// second middle line
-			//gc.strokeLine(secondMiddleLinePoint1.getX(),secondMiddleLinePoint1.getY() , secondMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint1.getY());
-			// girdle height (at right side)
-			//gc.strokeLine(secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY(), firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());
-			// radius 2
-			//gc.strokeLine(firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY(), Center.getX(), Center.getY() - girdleHeight/2);
-		    
-		});
-			
-	}
-//	private void clearPath(GraphicsContext gc2, Path diamondPath) {
-//		int xstart = (int) diamondPath.getLayoutX();
-//	    int xend = (int) (xstart + diamondPath.getLayoutBounds().getMaxX());
-//	    int ystart = (int) diamondPath.getLayoutY();
-//	    int yend = (int) (ystart + diamondPath.getLayoutBounds().getMaxY());
-//
-//	    PixelWriter pw = gc2.getPixelWriter();
-//	    for (int x = xstart; x <= xend; x++) {
-//	        for (int y = ystart; y <= yend; y++) {
-//	            if(diamondPath.contains(new Point2D(x, y))) {
-//	                pw.setColor(x, y, Color.TRANSPARENT);
-//	            }
-//	        }
-//	    }
-//	}
 		
+
+			
+		});
+	}
+
+
+
+	private void generateLines() {
+		
+		//Horizontal Line
+		gc.setStroke(Color.BLACK);
+		gc.strokeLine(0, scene.getHeight()/2, scene.getWidth(), scene.getHeight()/2);
+		//Vertical Line
+		gc.strokeLine(scene.getWidth()/2, 0, scene.getWidth()/2, scene.getHeight());
+	
+	}
+	
+
+
+	@SuppressWarnings("unused")
+	private void generateDiamond() {
+		
+		gc.clearRect(0, 0, 5000, 5000);
+		generateLines();
+		
+		
+		
+		
+		hbDiameter.setSpacing(27);
+		hbCrownHeight.setSpacing(3);
+		hbGirdleHeight.setSpacing(5);
+		hbCrownAngle.setSpacing(7);
+		hbPavilionAngle.setSpacing(5);
+		hbButtons.setSpacing(5);
+		vbDiamondProperties.setSpacing(3);
+		
+		btnGenerateDiamond.setOnMouseClicked(e->{
+			double diameter = Double.valueOf(txtDiameter.getText());
+			double radius = diameter/2;
+			double crownHeight = Double.valueOf(txtCrownHeight.getText());
+			double girdleHeight = Double.valueOf(txtGirdleHeight.getText());
+			double crownAngle = Double.valueOf(txtCrownAngle.getText());
+			double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
+			double crownAngleInRadions = Math.toRadians(crownAngle);
+			double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
+			
+			gc.clearRect(0, 0, 5000, 5000);
+			generateLines();
+			
+			
+			
+			
+			Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
+			
+			gc.setStroke(Color.CADETBLUE);
+			double[] topLineMidPoints = new double[4];
+			double[] firstMiddleLineMidPoints = new double[4];
+			double[] secondMiddleLineMidPoints = new double[4];
+			
+			
+			Path diamondPath = new Path();
+			diamondPath.setStroke(Color.CADETBLUE);
+			diamondPath.setOpacity(30);
+			
+			MoveTo start = new MoveTo(Center.getX(), Center.getY() - girdleHeight/2);
+			
+			Point2D firstMiddleLinePoint1 = new Point2D(Center.getX() - radius, Center.getY() - girdleHeight/2);
+			Point2D secondMiddleLinePoint1 = new Point2D(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY() + girdleHeight );
+			Point2D secondMiddleLinePoint2 = new Point2D(secondMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint1.getY());
+			Point2D firstMiddleLinePoint2 = new Point2D(firstMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint2.getY() - girdleHeight);
+			Point2D crownHeightEndPoint = new Point2D(Center.getX(), Center.getY() - crownHeight);
+			Point2D topLinePoint1 = new Point2D(crownHeightEndPoint.getX() - (radius) + ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
+			Point2D topLinePoint2 = new Point2D(crownHeightEndPoint.getX() + (radius) - ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
+			Point2D pavilionEndPoint = new Point2D(crownHeightEndPoint.getX(), start.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+			
+			//TODO Will come at this(Percentage logic) after done with generatePositioning()
+			double totalHeight = pavilionEndPoint.getY();
+			double pavilionHeight = totalHeight - Center.getY();
+			
+			
+			topLineMidPoints = getTwoMidPointsForLine(topLinePoint1.getX(), topLinePoint1.getY(), topLinePoint2.getX(), topLinePoint2.getY());
+			firstMiddleLineMidPoints = getTwoMidPointsForLine(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY(), firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());
+			secondMiddleLineMidPoints = getTwoMidPointsForLine(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY(), secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY());
+			
+			LineTo radius1 = new LineTo(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());
+			LineTo girdleHeightLeftSide = new LineTo(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY());
+			LineTo secondMiddleLine = new LineTo(secondMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint1.getY());
+			LineTo girdleHeightRightSide = new LineTo(firstMiddleLinePoint2.getX(), firstMiddleLinePoint2.getY());
+			LineTo radius2 = new LineTo(Center.getX(), Center.getY() - girdleHeight/2);
+			
+			MoveTo firstMiddleLinePoint2Again = new MoveTo(firstMiddleLinePoint1.getX() + diameter, secondMiddleLinePoint2.getY() - girdleHeight);
+			LineTo crownEndRight = new LineTo(topLinePoint2.getX(), topLinePoint2.getY());
+			LineTo topLine = new LineTo(topLinePoint1.getX(), topLinePoint1.getY());
+			LineTo crownEndLeft =  new LineTo(firstMiddleLinePoint1.getX(), firstMiddleLinePoint1.getY());
+			
+			MoveTo secondMiddleLinePoint1Again = new MoveTo(secondMiddleLinePoint1.getX(), secondMiddleLinePoint1.getY());
+			LineTo pavilionLeftSide = new LineTo(pavilionEndPoint.getX(), pavilionEndPoint.getY());
+			LineTo pavilionRightSide = new LineTo(secondMiddleLinePoint2.getX(), secondMiddleLinePoint2.getY());
+			
+			MoveTo topLineMidPoint1 = new MoveTo(topLineMidPoints[0], topLineMidPoints[1]);
+			LineTo crownFacetLine1 = new LineTo(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1]);
+			LineTo girdleFacetLine1 = new LineTo(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);
+			
+			MoveTo topLineMidPoint2 = new MoveTo(topLineMidPoints[2], topLineMidPoints[3]);
+			LineTo crownFacetLine2 = new LineTo(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3]);
+			LineTo girdleFacetLine2 = new LineTo(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);
+			LineTo pavilionFacetLine2 = new LineTo(pavilionEndPoint.getX(), pavilionEndPoint.getY());
+			LineTo pavilionFacetLine1 = new LineTo(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);
+			diamondPath.getElements().addAll(start, radius1, girdleHeightLeftSide,
+					secondMiddleLine, girdleHeightRightSide, radius2,
+					firstMiddleLinePoint2Again, crownEndRight, topLine,
+					crownEndLeft, secondMiddleLinePoint1Again, pavilionLeftSide,
+					pavilionRightSide, topLineMidPoint1, crownFacetLine1, 
+					girdleFacetLine1, topLineMidPoint2, crownFacetLine2,
+					girdleFacetLine2, pavilionFacetLine2, pavilionFacetLine1);
+			
+			Bounds pathBounds = diamondPath.getLayoutBounds();
+			
+		    WritableImage snapshot = new WritableImage(
+		            (int) pathBounds.getWidth()+2, (int) pathBounds.getHeight());
+		    SnapshotParameters snapshotParams = new SnapshotParameters();
+		    snapshotParams.setFill(Color.TRANSPARENT);
+		    snapshot = diamondPath.snapshot(snapshotParams, snapshot);
+		    //Image diamondImage = (Image) snapshot.getPixelWriter();
+		    //gc.getCanvas().snapshot(snapshotParams, snapshot);
+		    gc.drawImage(snapshot, pathBounds.getMinX(), pathBounds.getMinY());
+		});
+	}
 	
 	@SuppressWarnings("unused")
 	private double[] getTwoMidPointsForLine(double x1, double y1, double x2, double y2) {
