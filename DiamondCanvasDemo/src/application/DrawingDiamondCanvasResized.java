@@ -86,8 +86,9 @@ public class DrawingDiamondCanvasResized extends Application {
             gc.clearRect(0, 0, width, height);
             
 			generateLines();	// done
-    		generateDiamond();
-    		generatePositioning();
+    		generateDiamond();	// done	
+    		generatePositioning();	// done
+    		//generateDiamondChanged();
         }
       
         @Override
@@ -119,13 +120,16 @@ public class DrawingDiamondCanvasResized extends Application {
 			canvas.widthProperty().bind(root.widthProperty());
 			canvas.heightProperty().bind(root.heightProperty());
 			scene.widthProperty().addListener(e->{
-				canvas.draw();
+				//canvas.draw();
+				generatePositioning();
 				generateDiamondChanged();
 			});
 			scene.heightProperty().addListener(e->{
-				canvas.draw();
+				//canvas.draw();
+				generatePositioning();
 				generateDiamondChanged();
 			});
+			
 			btnResetToCenter.setOnMouseClicked(e->{
 				generateDiamondChanged();
 			});
@@ -140,8 +144,9 @@ public class DrawingDiamondCanvasResized extends Application {
 	}
 
 
-
-	private void generateDiamondChanged() {
+	// This method is intended to generate diamond when scene gets resized 
+	// Diamond gets generated at center only
+	private void generateDiamondChanged() throws NumberFormatException{
 		double diameter = Double.valueOf(txtDiameter.getText());
 		double radius = diameter/2;
 		double crownHeight = Double.valueOf(txtCrownHeight.getText());
@@ -227,8 +232,8 @@ public class DrawingDiamondCanvasResized extends Application {
 	}
 
 
-
-	private void generatePositioning() {
+	// This method is intended to generate diamond at specified position where mouse click occurs
+	private void generatePositioning() throws NumberFormatException {
 		
 		scene.setOnMouseClicked(e->{
 			double diameter = Double.valueOf(txtDiameter.getText());
@@ -318,11 +323,11 @@ public class DrawingDiamondCanvasResized extends Application {
 	}
 
 
-
+	// This method is responsible for the two lines which defines center of scene for judgement
 	private void generateLines() {
 		
-		//Horizontal Line
 		gc.setStroke(Color.BLACK);
+		//Horizontal Line
 		gc.strokeLine(0, scene.getHeight()/2, scene.getWidth(), scene.getHeight()/2);
 		//Vertical Line
 		gc.strokeLine(scene.getWidth()/2, 0, scene.getWidth()/2, scene.getHeight());
@@ -330,15 +335,12 @@ public class DrawingDiamondCanvasResized extends Application {
 	}
 	
 
-
+	// This method generates diamond based on input parameters (Currently in pixels)
 	@SuppressWarnings("unused")
-	private void generateDiamond() {
+	private void generateDiamond() throws NumberFormatException{
 		
 		gc.clearRect(0, 0, 5000, 5000);
 		generateLines();
-		
-		
-		
 		
 		hbDiameter.setSpacing(27);
 		hbCrownHeight.setSpacing(3);
@@ -386,10 +388,10 @@ public class DrawingDiamondCanvasResized extends Application {
 			Point2D topLinePoint1 = new Point2D(crownHeightEndPoint.getX() - (radius) + ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
 			Point2D topLinePoint2 = new Point2D(crownHeightEndPoint.getX() + (radius) - ((crownHeight) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), crownHeightEndPoint.getY());
 			Point2D pavilionEndPoint = new Point2D(crownHeightEndPoint.getX(), start.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
-			
+			Point2D pavilionHeightEndPoint = new Point2D(Center.getX(), Center.getY() + girdleHeight);
 			//TODO Will come at this(Percentage logic) after done with generatePositioning()
-			double totalHeight = pavilionEndPoint.getY();
-			double pavilionHeight = totalHeight - Center.getY();
+			double totalHeight = pavilionEndPoint.getY() - crownHeightEndPoint.getY();
+			double pavilionHeight = pavilionEndPoint.getY() - pavilionHeightEndPoint.getY();
 			
 			
 			topLineMidPoints = getTwoMidPointsForLine(topLinePoint1.getX(), topLinePoint1.getY(), topLinePoint2.getX(), topLinePoint2.getY());
@@ -438,9 +440,24 @@ public class DrawingDiamondCanvasResized extends Application {
 		    //Image diamondImage = (Image) snapshot.getPixelWriter();
 		    //gc.getCanvas().snapshot(snapshotParams, snapshot);
 		    gc.drawImage(snapshot, pathBounds.getMinX(), pathBounds.getMinY());
+		    double crownHeightPercentage, girdleHeightPercentage, pavilionHeightPercentage;
+		    crownHeightPercentage = (crownHeight/totalHeight) * 100;
+		    girdleHeightPercentage = (girdleHeight/totalHeight) * 100;
+		    pavilionHeightPercentage = (pavilionHeight/totalHeight) * 100;
+//		    System.out.println("Total Height: " + totalHeight);
+//		    System.out.println("Crown Height: " + crownHeight);
+//		    System.out.println("Girdle Height: " + girdleHeight);
+//		    System.out.println("Pavilion Height: " + pavilionHeight);
+//		    System.out.println("Crown Height in percentage: " + crownHeightPercentage);
+//		    System.out.println("Girdle Height in percentage: " + girdleHeightPercentage);
+//		    System.out.println("Pavilion Height in percentage: " + pavilionHeightPercentage);
+//		    System.out.println(crownHeightPercentage + girdleHeightPercentage+ pavilionHeightPercentage);
+//		    
 		});
 	}
 	
+	
+	// This method finds two mid points for a line(Input: line's two end points' X and Y co-ordinates)
 	@SuppressWarnings("unused")
 	private double[] getTwoMidPointsForLine(double x1, double y1, double x2, double y2) {
 		
