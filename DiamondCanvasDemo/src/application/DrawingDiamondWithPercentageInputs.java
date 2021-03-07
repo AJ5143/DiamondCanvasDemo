@@ -11,6 +11,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.WritableImage;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
@@ -111,9 +112,10 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 				
 				
 				Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
-				Point2D CenterofDiameter = new Point2D(Center.getX(), Center.getY() + 8);
+				Point2D CenterofDiameter = new Point2D(Center.getX(), Center.getY());
 				Point2D pavilionEndPoint = new Point2D(Center.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
 				gc.setStroke(Color.CADETBLUE);
+				gc.setLineWidth(2);
 				double[] topLineMidPoints = new double[4];
 				double[] firstMiddleLineMidPoints = new double[4];
 				double[] secondMiddleLineMidPoints = new double[4];
@@ -151,17 +153,37 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 				// girdle start
 				gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
 				
+				// girdle end
 				gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY());
 				
-//			    System.out.println("Total Height: " + totalHeight);
-//			    System.out.println("Crown Height: " + crownHeight);
-//			    System.out.println("Girdle Height: " + girdleHeight);
-//			    System.out.println("Pavilion Height: " + pavilionHeight);
-//			    System.out.println("Crown Height in percentage: " + crownHeightPercentage);
-//			    System.out.println("Girdle Height in percentage: " + girdleHeightPercentage);
-//			    System.out.println("Pavilion Height in percentage: " + pavilionHeightPercentage);
-//			    System.out.println(crownHeightPercentage + girdleHeightPercentage+ pavilionHeightPercentage);
-//			    
+				// crown end
+				gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, tableRight.getX(), tableRight.getY());
+				
+				// table
+				gc.strokeLine(tableRight.getX(), tableRight.getY(), tableLeft.getX(), tableLeft.getY());
+				
+				// crown start
+				gc.strokeLine(tableLeft.getX(), tableLeft.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+				
+				// for crown facets
+				topLineMidPoints = getTwoMidPointsForLine(tableLeft.getX(), tableLeft.getY(), tableRight.getX(), tableRight.getY());
+				
+				
+				
+				// for girdle facets
+				firstMiddleLineMidPoints = getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+				secondMiddleLineMidPoints = getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+				
+				gc.strokeLine(topLineMidPoints[0], topLineMidPoints[1],firstMiddleLineMidPoints[0] , firstMiddleLineMidPoints[1]); //crown facets
+				gc.strokeLine(topLineMidPoints[2], topLineMidPoints[3],firstMiddleLineMidPoints[2] , firstMiddleLineMidPoints[3]); //crown facets
+				gc.strokeLine(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1], secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);   //girdle facets
+				gc.strokeLine(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3], secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);	 //girdle facets
+				
+				gc.strokeLine(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+				gc.strokeLine(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+				
+				
+				
 			});
 			
 		}
@@ -182,7 +204,99 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		}
 
 		private void generatePositioning() {
-			
+			scene.setOnMouseClicked(e->{
+				gc.clearRect(0, 0, 5000, 5000);
+				generateLines();
+				hbDiameter.setSpacing(27);
+				hbCrownHeight.setSpacing(3);
+				hbGirdleHeight.setSpacing(5);
+				hbCrownAngle.setSpacing(7);
+				hbPavilionAngle.setSpacing(5);
+				hbButtons.setSpacing(5);
+				vbDiamondProperties.setSpacing(3);
+				
+					double diameter = Double.valueOf(txtDiameter.getText());
+					double radius = diameter/2;
+					double crownHeightInPercentage = Double.valueOf(txtCrownHeight.getText());
+					double girdleHeightInPercentage = Double.valueOf(txtGirdleHeight.getText());
+					double crownAngle = Double.valueOf(txtCrownAngle.getText());
+					double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
+					double crownAngleInRadions = Math.toRadians(crownAngle);
+					double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
+					
+					gc.clearRect(0, 0, 5000, 5000);
+					generateLines();
+					
+					Point2D Center = new Point2D(e.getSceneX(), e.getSceneY());
+					Point2D CenterofDiameter = new Point2D(Center.getX(), Center.getY());
+					Point2D pavilionEndPoint = new Point2D(Center.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+					gc.setStroke(Color.CADETBLUE);
+					double[] topLineMidPoints = new double[4];
+					double[] firstMiddleLineMidPoints = new double[4];
+					double[] secondMiddleLineMidPoints = new double[4];
+					
+					// Left radius
+					gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY()); 
+					// Right radius
+					gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+					// leftmost pavilion line
+					gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+					// rightmost pavilion line
+					gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY(), CenterofDiameter.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+					double pavilionHeightInPixels = pavilionEndPoint.getY() - CenterofDiameter.getY();
+					System.out.println(pavilionHeightInPixels);
+					double pavilionHeightInPercentage = 100 - crownHeightInPercentage - girdleHeightInPercentage;
+					double totalHeightInPixels = (pavilionHeightInPixels * 100)/pavilionHeightInPercentage;
+					double perPercentPixel = totalHeightInPixels/100;
+					System.out.println(perPercentPixel);
+					double crownHeightInPixels = crownHeightInPercentage * perPercentPixel;
+					double girdleHeightInPixels = girdleHeightInPercentage * perPercentPixel;
+					//double pavilionHeightInPixels2 = pavilionHeightInPercentage * perPercentPixel;
+					System.out.println(crownHeightInPixels);
+					System.out.println(totalHeightInPixels);
+					//System.out.println(pavilionHeightInPixels2);
+					System.out.println(pavilionHeightInPixels);
+					System.out.println(girdleHeightInPixels);
+					Point2D tableEndPoint = new Point2D(CenterofDiameter.getX(),pavilionEndPoint.getY() - totalHeightInPixels);
+					Point2D tableLeft = new Point2D(tableEndPoint.getX() - (radius) + ((crownHeightInPercentage) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), tableEndPoint.getY());
+					Point2D tableRight = new Point2D(tableEndPoint.getX() + (radius) - ((crownHeightInPercentage) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), tableEndPoint.getY());
+					//gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), tableLeft.getX(), tableLeft.getY()); // Testing
+					
+					// leftmost girdleHeight
+					gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+					
+					// girdle start
+					gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+					
+					// girdle end
+					gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+					
+					// crown end
+					gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, tableRight.getX(), tableRight.getY());
+					
+					// table
+					gc.strokeLine(tableRight.getX(), tableRight.getY(), tableLeft.getX(), tableLeft.getY());
+					
+					// crown start
+					gc.strokeLine(tableLeft.getX(), tableLeft.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+					
+					// for crown facets
+					topLineMidPoints = getTwoMidPointsForLine(tableLeft.getX(), tableLeft.getY(), tableRight.getX(), tableRight.getY());
+					
+					
+					
+					// for girdle facets
+					firstMiddleLineMidPoints = getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+					secondMiddleLineMidPoints = getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+					
+					gc.strokeLine(topLineMidPoints[0], topLineMidPoints[1],firstMiddleLineMidPoints[0] , firstMiddleLineMidPoints[1]); //crown facets
+					gc.strokeLine(topLineMidPoints[2], topLineMidPoints[3],firstMiddleLineMidPoints[2] , firstMiddleLineMidPoints[3]); //crown facets
+					gc.strokeLine(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1], secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);   //girdle facets
+					gc.strokeLine(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3], secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);	 //girdle facets
+					
+					gc.strokeLine(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+					gc.strokeLine(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+			});
 			
 		}
 
@@ -200,6 +314,102 @@ public class DrawingDiamondWithPercentageInputs extends Application {
         public double prefHeight(double height) {
             return getHeight();
         }
+
+		public void redrawAtCenter() {
+			gc.clearRect(0, 0, 5000, 5000);
+			generateLines();
+			hbDiameter.setSpacing(27);
+			hbCrownHeight.setSpacing(3);
+			hbGirdleHeight.setSpacing(5);
+			hbCrownAngle.setSpacing(7);
+			hbPavilionAngle.setSpacing(5);
+			hbButtons.setSpacing(5);
+			vbDiamondProperties.setSpacing(3);
+			
+			double diameter = Double.valueOf(txtDiameter.getText());
+			double radius = diameter/2;
+			double crownHeightInPercentage = Double.valueOf(txtCrownHeight.getText());
+			double girdleHeightInPercentage = Double.valueOf(txtGirdleHeight.getText());
+			double crownAngle = Double.valueOf(txtCrownAngle.getText());
+			double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
+			double crownAngleInRadions = Math.toRadians(crownAngle);
+			double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
+			
+			gc.clearRect(0, 0, 5000, 5000);
+			generateLines();
+			
+			Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
+			Point2D CenterofDiameter = new Point2D(Center.getX(), Center.getY());
+			Point2D pavilionEndPoint = new Point2D(Center.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+			gc.setStroke(Color.CADETBLUE);
+			double[] topLineMidPoints = new double[4];
+			double[] firstMiddleLineMidPoints = new double[4];
+			double[] secondMiddleLineMidPoints = new double[4];
+			
+			// Left radius
+			gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY()); 
+			// Right radius
+			gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+			// leftmost pavilion line
+			gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+			// rightmost pavilion line
+			gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY(), CenterofDiameter.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+			double pavilionHeightInPixels = pavilionEndPoint.getY() - CenterofDiameter.getY();
+			System.out.println(pavilionHeightInPixels);
+			double pavilionHeightInPercentage = 100 - crownHeightInPercentage - girdleHeightInPercentage;
+			double totalHeightInPixels = (pavilionHeightInPixels * 100)/pavilionHeightInPercentage;
+			double perPercentPixel = totalHeightInPixels/100;
+			System.out.println(perPercentPixel);
+			double crownHeightInPixels = crownHeightInPercentage * perPercentPixel;
+			double girdleHeightInPixels = girdleHeightInPercentage * perPercentPixel;
+			//double pavilionHeightInPixels2 = pavilionHeightInPercentage * perPercentPixel;
+			System.out.println(crownHeightInPixels);
+			System.out.println(totalHeightInPixels);
+			//System.out.println(pavilionHeightInPixels2);
+			System.out.println(pavilionHeightInPixels);
+			System.out.println(girdleHeightInPixels);
+			Point2D tableEndPoint = new Point2D(CenterofDiameter.getX(),pavilionEndPoint.getY() - totalHeightInPixels);
+			Point2D tableLeft = new Point2D(tableEndPoint.getX() - (radius) + ((crownHeightInPercentage) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), tableEndPoint.getY());
+			Point2D tableRight = new Point2D(tableEndPoint.getX() + (radius) - ((crownHeightInPercentage) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), tableEndPoint.getY());
+			//gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), tableLeft.getX(), tableLeft.getY()); // Testing
+			
+			// leftmost girdleHeight
+			gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+			
+			// girdle start
+			gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+			
+			// girdle end
+			gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+			
+			// crown end
+			gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, tableRight.getX(), tableRight.getY());
+			
+			// table
+			gc.strokeLine(tableRight.getX(), tableRight.getY(), tableLeft.getX(), tableLeft.getY());
+			
+			// crown start
+			gc.strokeLine(tableLeft.getX(), tableLeft.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+			
+			// for crown facets
+			topLineMidPoints = getTwoMidPointsForLine(tableLeft.getX(), tableLeft.getY(), tableRight.getX(), tableRight.getY());
+			
+			
+			
+			// for girdle facets
+			firstMiddleLineMidPoints = getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+			secondMiddleLineMidPoints = getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+			
+			gc.strokeLine(topLineMidPoints[0], topLineMidPoints[1],firstMiddleLineMidPoints[0] , firstMiddleLineMidPoints[1]); //crown facets
+			gc.strokeLine(topLineMidPoints[2], topLineMidPoints[3],firstMiddleLineMidPoints[2] , firstMiddleLineMidPoints[3]); //crown facets
+			gc.strokeLine(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1], secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);   //girdle facets
+			gc.strokeLine(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3], secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);	 //girdle facets
+			
+			gc.strokeLine(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+			gc.strokeLine(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+
+			
+		}
         
     }
  
@@ -223,15 +433,15 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		canvas.heightProperty().bind(root.heightProperty());
 		scene.widthProperty().addListener(e->{
 			canvas.draw();
-			generateDiamondChanged();
+			generateDiamondChangedX( ((MouseEvent) e).getSceneX() );
 		});
 		scene.heightProperty().addListener(e->{
 			canvas.draw();
-			generateDiamondChanged();
+			generateDiamondChangedY(((MouseEvent) e).getSceneY());
 		});
 		
 		btnResetToCenter.setOnMouseClicked(e->{
-			generateDiamondChanged();
+			canvas.redrawAtCenter();
 		});
 		
 		primaryStage.setScene(scene);
@@ -245,10 +455,114 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 
 
 
-	private void generateDiamondChanged() {
+	
+	private void generateDiamondChangedY(double sceneY) {
 		
 		
 	}
+
+
+
+
+	private void generateDiamondChangedX(double sceneX) {
+		
+		gc.clearRect(0, 0, 5000, 5000);
+		canvas.generateLines();
+		hbDiameter.setSpacing(27);
+		hbCrownHeight.setSpacing(3);
+		hbGirdleHeight.setSpacing(5);
+		hbCrownAngle.setSpacing(7);
+		hbPavilionAngle.setSpacing(5);
+		hbButtons.setSpacing(5);
+		vbDiamondProperties.setSpacing(3);
+		
+		double diameter = Double.valueOf(txtDiameter.getText());
+		double radius = diameter/2;
+		double crownHeightInPercentage = Double.valueOf(txtCrownHeight.getText());
+		double girdleHeightInPercentage = Double.valueOf(txtGirdleHeight.getText());
+		double crownAngle = Double.valueOf(txtCrownAngle.getText());
+		double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
+		double crownAngleInRadions = Math.toRadians(crownAngle);
+		double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
+		
+		gc.clearRect(0, 0, 5000, 5000);
+		canvas.generateLines();
+		
+		Point2D Center = new Point2D(sceneX, scene.getHeight()/2);
+		Point2D CenterofDiameter = new Point2D(Center.getX(), Center.getY());
+		Point2D pavilionEndPoint = new Point2D(Center.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+		gc.setStroke(Color.CADETBLUE);
+		double[] topLineMidPoints = new double[4];
+		double[] firstMiddleLineMidPoints = new double[4];
+		double[] secondMiddleLineMidPoints = new double[4];
+		
+		// Left radius
+		gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY()); 
+		// Right radius
+		gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+		// leftmost pavilion line
+		gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+		// rightmost pavilion line
+		gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY(), CenterofDiameter.getX(), CenterofDiameter.getY() + (radius/Math.cos(pavilionAngleInRadions)) * Math.sin(pavilionAngleInRadions));
+		double pavilionHeightInPixels = pavilionEndPoint.getY() - CenterofDiameter.getY();
+		System.out.println(pavilionHeightInPixels);
+		double pavilionHeightInPercentage = 100 - crownHeightInPercentage - girdleHeightInPercentage;
+		double totalHeightInPixels = (pavilionHeightInPixels * 100)/pavilionHeightInPercentage;
+		double perPercentPixel = totalHeightInPixels/100;
+		System.out.println(perPercentPixel);
+		double crownHeightInPixels = crownHeightInPercentage * perPercentPixel;
+		double girdleHeightInPixels = girdleHeightInPercentage * perPercentPixel;
+		//double pavilionHeightInPixels2 = pavilionHeightInPercentage * perPercentPixel;
+		System.out.println(crownHeightInPixels);
+		System.out.println(totalHeightInPixels);
+		//System.out.println(pavilionHeightInPixels2);
+		System.out.println(pavilionHeightInPixels);
+		System.out.println(girdleHeightInPixels);
+		Point2D tableEndPoint = new Point2D(CenterofDiameter.getX(),pavilionEndPoint.getY() - totalHeightInPixels);
+		Point2D tableLeft = new Point2D(tableEndPoint.getX() - (radius) + ((crownHeightInPercentage) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), tableEndPoint.getY());
+		Point2D tableRight = new Point2D(tableEndPoint.getX() + (radius) - ((crownHeightInPercentage) * Math.cos(crownAngleInRadions) / Math.sin(crownAngleInRadions)), tableEndPoint.getY());
+		//gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), tableLeft.getX(), tableLeft.getY()); // Testing
+		
+		// leftmost girdleHeight
+		gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+		
+		// girdle start
+		gc.strokeLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+		
+		// girdle end
+		gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+		
+		// crown end
+		gc.strokeLine(CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels, tableRight.getX(), tableRight.getY());
+		
+		// table
+		gc.strokeLine(tableRight.getX(), tableRight.getY(), tableLeft.getX(), tableLeft.getY());
+		
+		// crown start
+		gc.strokeLine(tableLeft.getX(), tableLeft.getY(), CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels);
+		
+		// for crown facets
+		topLineMidPoints = canvas.getTwoMidPointsForLine(tableLeft.getX(), tableLeft.getY(), tableRight.getX(), tableRight.getY());
+		
+		
+		
+		// for girdle facets
+		firstMiddleLineMidPoints = canvas.getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
+		secondMiddleLineMidPoints = canvas.getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY(), CenterofDiameter.getX() + radius, CenterofDiameter.getY());
+		
+		gc.strokeLine(topLineMidPoints[0], topLineMidPoints[1],firstMiddleLineMidPoints[0] , firstMiddleLineMidPoints[1]); //crown facets
+		gc.strokeLine(topLineMidPoints[2], topLineMidPoints[3],firstMiddleLineMidPoints[2] , firstMiddleLineMidPoints[3]); //crown facets
+		gc.strokeLine(firstMiddleLineMidPoints[0], firstMiddleLineMidPoints[1], secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1]);   //girdle facets
+		gc.strokeLine(firstMiddleLineMidPoints[2], firstMiddleLineMidPoints[3], secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3]);	 //girdle facets
+		
+		gc.strokeLine(secondMiddleLineMidPoints[0], secondMiddleLineMidPoints[1], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+		gc.strokeLine(secondMiddleLineMidPoints[2], secondMiddleLineMidPoints[3], pavilionEndPoint.getX(), pavilionEndPoint.getY()); // pavilion facets
+
+	}
+
+
+
+
 	public static void main(String[] args) {
 		launch(args);
 	}
