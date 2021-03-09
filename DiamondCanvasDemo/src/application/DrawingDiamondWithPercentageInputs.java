@@ -813,7 +813,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 //			canvas.generatePositioning();
 //			//generateDiamondChanged();
 //		});
-		//primaryStage.setResizable(false);
+		
 //		primaryStage.resizableProperty().addListener(e->{
 //			canvas.generatePositioning();
 //		});
@@ -821,7 +821,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		
         
 		
-		
+		//primaryStage.setResizable(false);
 		primaryStage.setScene(scene);
 		primaryStage.show();
 		
