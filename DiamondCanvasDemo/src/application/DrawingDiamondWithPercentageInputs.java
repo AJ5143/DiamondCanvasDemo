@@ -485,6 +485,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 			// Platform.runLater() method is used for working with threads in javafx
 			// Basically it makes sure that the Application thread(Main thread of javafx) and user defined thread are always in sync
 			// Actually it is just to avoid "Unrecognized PGCanvas Token" Exception
+			
 	        Platform.runLater(() -> {
 	        	gc.clearRect(0, 0, 5000, 5000);
 				generateLines();
