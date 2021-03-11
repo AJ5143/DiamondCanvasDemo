@@ -22,6 +22,7 @@ public class StageResizeDemo extends Application {
 public void start(Stage primaryStage) throws Exception {
 		Label lbl = new Label("Hiii");
 		TextField txt = new TextField();
+		txt.deselect();
 		txt.setPromptText("Hellooooo");
 		
 		HBox hb = new HBox(lbl,txt);
