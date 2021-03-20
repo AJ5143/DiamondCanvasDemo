@@ -29,7 +29,7 @@ import javafx.stage.Stage;
 // In order to change positioning, I will redraw with strokeLines at specific position
 // Stack is a powerful data structure indeed
 // git adding new again
-
+// git adding again
 public class DrawingDiamondWithPercentageInputs extends Application {
 	
 	Label lblDiameter = new Label("Enter Diameter: ");
