@@ -28,7 +28,8 @@ import javafx.stage.Stage;
 // This time I will use strokeLine method so NO PATHs, NO MOVETOs, NO LINETOs and NO WRITABLE IMAGEs!
 // In order to change positioning, I will redraw with strokeLines at specific position
 // Stack is a powerful data structure indeed
-// git adding
+// git adding new again
+
 public class DrawingDiamondWithPercentageInputs extends Application {
 	
 	Label lblDiameter = new Label("Enter Diameter: ");
