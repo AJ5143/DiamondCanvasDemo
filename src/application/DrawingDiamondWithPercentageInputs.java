@@ -17,6 +17,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.image.Image;
+import javafx.scene.input.ScrollEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
@@ -28,8 +29,7 @@ import javafx.stage.Stage;
 // This time I will use strokeLine method so NO PATHs, NO MOVETOs, NO LINETOs and NO WRITABLE IMAGEs!
 // In order to change positioning, I will redraw with strokeLines at specific position
 // Stack is a powerful data structure indeed
-// git adding new again
-// git adding again
+
 public class DrawingDiamondWithPercentageInputs extends Application {
 	
 	Label lblDiameter = new Label("Enter Diameter: ");
@@ -66,6 +66,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 	volatile Stack<Point2D> stackOfClicks = new Stack<Point2D>();
 	volatile Stack<Point2D> stackOfNewDiamond = new Stack<Point2D>();
 	
+	// Actual resizable canvas in which drawing is performed
 	class ResizableCanvas extends Canvas{
 		 
         public ResizableCanvas() {
@@ -86,7 +87,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
     		generateDiamond();	// done	
     		//generatePositioning();	// done
         }
-      
+        // Drawing method for diamond
         public void drawDiamond(Point2D CenterOfDiamond) {
     		
     		Platform.runLater(() -> {
@@ -177,7 +178,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
     		
     		
     	}
-
+        // Center defining lines
         private void generateLines() {
         	
     		gc.setStroke(Color.BLACK);
@@ -187,7 +188,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
     		gc.strokeLine(scene.getWidth()/2, 0, scene.getWidth()/2, scene.getHeight());
     	
 		}
-
+        // Generate Button method
 		private void generateDiamond() {
 			Platform.runLater(()->{
 
@@ -209,8 +210,20 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 				restrictNumberOnly(txtGirdleHeight);
 				restrictNumberOnly(txtCrownAngle);
 				restrictNumberOnly(txtPavilionAngle);
+				mouseScrollWheelFunctionality(txtDiameter);
+				mouseScrollWheelFunctionality(txtCrownHeight);
+				mouseScrollWheelFunctionality(txtGirdleHeight);
+				mouseScrollWheelFunctionality(txtCrownAngle);
+				mouseScrollWheelFunctionality(txtPavilionAngle);
 				
-				// This boolean binding is to ensure no null/ NaN entries in input parameter fields
+				Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
+				stackOfNewDiamond.add(Center);
+				changedParametersRedraw(txtDiameter,stackOfNewDiamond.peek());
+				changedParametersRedraw(txtCrownHeight,stackOfNewDiamond.peek());
+				changedParametersRedraw(txtGirdleHeight,stackOfNewDiamond.peek());
+				changedParametersRedraw(txtCrownAngle,stackOfNewDiamond.peek());
+				changedParametersRedraw(txtPavilionAngle,stackOfNewDiamond.peek());
+				// This boolean binding is to ensure no null entries in input parameter fields
 				BooleanBinding bb = new BooleanBinding() {
 					{
 						super.bind(txtDiameter.textProperty(), txtCrownHeight.textProperty(), txtGirdleHeight.textProperty(), txtCrownAngle.textProperty(), txtPavilionAngle.textProperty());
@@ -250,7 +263,8 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 			
 			});
 		}
-			
+		// Middle points(Here 2) finder method
+		// Can be customizable according to number of mid points(Equal-distance)
 		private double[] getTwoMidPointsForLine(double x1, double y1, double x2, double y2) {
 			
 			double topX1;
@@ -266,7 +280,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 			return points;
 		}	
 		
-		
+		// Method to restrict the input to only numeric (Decimal points) entries
 		public void restrictNumberOnly(TextField tf) {
 			 //Backup "|[-\\+]?|[-\\+]?\\d+\\.?|[-\\+]?\\d+\\.?\\d+"
 			 //Backup "|\\d+\\.?|\\d+\\.?\\d+"
@@ -279,14 +293,43 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		                
 		            }
 		            else if(newValue.isEmpty()) {
-		            	tf.setText("1");
+		            	tf.setText("00");
+		            	
 		            }
 		            
 		        }
 		    });
 			
 		}
-
+		
+		// Method for changing values inside input fields based on mouse scroll wheel movement
+		public void mouseScrollWheelFunctionality(TextField tf) {
+//			restrictNumberOnly(tf);
+			if(tf.isFocused()) {
+				scene.focusOwnerProperty().isNull();
+			}
+			tf.setOnScroll( event ->{
+//				double delta = event.getDeltaY();
+//				double initFactor = 1.0;
+				if(event.getDeltaY()<0) {
+//					initFactor = initFactor - 2;
+//					double newValue = Double.valueOf(tf.getText()) + initFactor;
+//					tf.setText(String.valueOf(newValue));
+//					initFactor = 1.0;
+					tf.setText(String.valueOf(Double.parseDouble(tf.getText())-1));
+					
+				}
+				else {
+//					initFactor = initFactor +1;
+//					double newValue = Double.valueOf(tf.getText()) + initFactor;
+//					tf.setText(String.valueOf(newValue));
+//					initFactor = 1.0;
+					tf.setText(String.valueOf(Double.parseDouble(tf.getText())+1));
+				}
+				});
+			
+		}
+		// Method for moving diamond to specific mouse click on scene
 		private void generatePositioning() {
 			Platform.runLater(() -> {
 
@@ -378,16 +421,19 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 				
 			});
 		}
-			
+		
+		// Method for redrawing diamond based on change in input fields
 		private void changedParametersRedraw(TextField tf, Point2D peek) {
 			
 			tf.textProperty().addListener((observable, oldvalue,newvalue) ->{
 				canvas.restrictNumberOnly(tf);
+				//canvas.mouseScrollWheelFunctionality(tf);
 				canvas.drawDiamond(peek);
 			});
+		
 			
 		}
-
+		// Method for processing size changes of stage(Maximize/Minimize/Drag)
 		public void process(Point2D center,Point2D oldSize ,Point2D newSize, Stage primaryStage) throws InterruptedException {
 			
 			Thread.sleep(5);
@@ -426,7 +472,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
        public double prefHeight(double height) {
            return getHeight();
        }
-
+        // Method for redrawing Diamond at Center
 		public void redrawAtCenter() {
 			Platform.runLater(()->{
 
@@ -468,7 +514,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 					}};
 				scene.widthProperty().addListener(listener);
 				scene.heightProperty().addListener(listener);
-
+				
 				Point2D CenterofDiameter = new Point2D(Center.getX(), Center.getY());
 				stackOfNewDiamond.push(CenterofDiameter);
 				canvas.drawDiamond(stackOfNewDiamond.peek());
@@ -497,7 +543,11 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		txtGirdleHeight.setPromptText("In percentage to total height");
 		txtCrownAngle.setPromptText("In Degrees");
 		txtPavilionAngle.setPromptText("In Degrees");
-		
+		txtDiameter.setText("200");
+		txtCrownHeight.setText("20");
+		txtGirdleHeight.setText("10");
+		txtCrownAngle.setText("45");
+		txtPavilionAngle.setText("45");
 		txtDiameter.setPrefWidth(165);
 		txtCrownHeight.setPrefWidth(165);
 		txtGirdleHeight.setPrefWidth(165);
@@ -513,6 +563,14 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		scene.setOnMouseClicked(e->{
 				canvas.generatePositioning();
 		});
+		scene.setOnScroll(s->{
+			if(s.getDeltaY()<0) {
+				txtDiameter.setText(String.valueOf(Double.parseDouble(txtDiameter.getText())-1));
+			}
+			else
+				txtDiameter.setText(String.valueOf(Double.parseDouble(txtDiameter.getText())+1));
+		});
+		
 		BooleanBinding bb = new BooleanBinding() {
 			{
 				super.bind(txtDiameter.textProperty(), txtCrownHeight.textProperty(), txtGirdleHeight.textProperty(), txtCrownAngle.textProperty(), txtPavilionAngle.textProperty());
