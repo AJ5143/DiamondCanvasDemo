@@ -34,32 +34,38 @@ import javafx.stage.Stage;
 
 public class DrawingDiamondWithPercentageInputs extends Application {
 	
-	Label lblDiameter = new Label("Enter Diameter: ");
-	Label lblCrownHeight = new Label("Enter Crown Height: ");
-	Label lblGirdleHeight = new Label("Enter Girdle Height: ");
-	Label lblCrownAngle = new Label("Enter Crown Angle: ");
-	Label lblPavilionAngle = new Label("Enter Pavilion Angle:");
-	Label lblLineAngle = new Label("Enter Line Angle:");
-	Label lblDistance = new Label("Distance from Center:");
+	Label lblDiameter = new Label("Diameter: ");
+	Label lblCrownHeight = new Label("Crown Height: ");
+	Label lblGirdleHeight = new Label("Girdle Height: ");
+	Label lblCrownAngle = new Label("Crown Angle: ");
+	Label lblPavilionAngle = new Label("Pavilion Angle:");
+	Label lblCrownLineAngle = new Label("Crown Line Angle:");
+	Label lblPavilionLineAngle = new Label("Pavilion Line Angle:");
+	Label lblDistanceCrown = new Label("Crown Line Distance:");
+	Label lblDistancePavilion = new Label("Pavilion Line Distance:");
 	TextField txtDiameter = new TextField();
 	TextField txtCrownHeight = new TextField();
 	TextField txtGirdleHeight = new TextField();
 	TextField txtCrownAngle = new TextField();
 	TextField txtPavilionAngle = new TextField();
-	TextField txtLineAngle = new TextField();
-	TextField txtDistance  = new TextField();
+	TextField txtCrownLineAngle = new TextField();
+	TextField txtPavilionLineAngle = new TextField();
+	TextField txtDistanceCrown  = new TextField();
+	TextField txtDistancePavilion = new TextField();
 	Region r = new Region();
 	HBox hbDiameter = new HBox(lblDiameter,txtDiameter);
 	HBox hbCrownHeight = new HBox(lblCrownHeight,txtCrownHeight);
 	HBox hbGirdleHeight = new HBox(lblGirdleHeight,txtGirdleHeight);
 	HBox hbCrownAngle = new HBox(lblCrownAngle,txtCrownAngle);
 	HBox hbPavilionAngle = new HBox(lblPavilionAngle,txtPavilionAngle);
-	HBox hbLineAngle = new HBox(lblLineAngle,txtLineAngle);
-	HBox hbDistance = new HBox(lblDistance, txtDistance);
+	HBox hbCrownLineAngle = new HBox(lblCrownLineAngle,txtCrownLineAngle);
+	HBox hbPavilionLineAngle = new HBox(lblPavilionLineAngle, txtPavilionLineAngle);
+	HBox hbDistanceCrown = new HBox(lblDistanceCrown, txtDistanceCrown);
+	HBox hbDistancePavilion = new HBox(lblDistancePavilion, txtDistancePavilion);
 	Button btnGenerateDiamond = new Button("Generate");
 	Button btnResetToCenter = new Button("Reset to Center");
 	HBox hbButtons = new HBox(btnGenerateDiamond, btnResetToCenter);
-	VBox vbDiamondProperties = new VBox(r, hbDiameter, hbCrownHeight, hbGirdleHeight, hbCrownAngle, hbPavilionAngle, hbLineAngle, hbDistance, hbButtons);
+	VBox vbDiamondProperties = new VBox(r, hbDiameter, hbCrownHeight, hbGirdleHeight, hbCrownAngle, hbPavilionAngle, hbCrownLineAngle, hbPavilionLineAngle, hbDistanceCrown, hbDistancePavilion, hbButtons);
 	
 	BorderPane root = new BorderPane();
 	
@@ -108,12 +114,13 @@ public class DrawingDiamondWithPercentageInputs extends Application {
         		double girdleHeightInPercentage = Double.valueOf(txtGirdleHeight.getText());
         		double crownAngle = Double.valueOf(txtCrownAngle.getText());
         		double pavilionAngle = Double.valueOf(txtPavilionAngle.getText());
-        		double lineAngle = Double.valueOf(txtLineAngle.getText());
-
+        		double crownLineAngle = Double.valueOf(txtCrownLineAngle.getText());
+        		double pavilionLineAngle = Double.valueOf(txtPavilionLineAngle.getText());
+        		
         		double crownAngleInRadions = Math.toRadians(crownAngle);
         		double pavilionAngleInRadions = Math.toRadians(pavilionAngle);
-        		double lineAngleInRadions = Math.toRadians(lineAngle);
-        		
+        		double crownLineAngleInRadions =(Math.PI/2) + Math.toRadians(crownLineAngle);
+        		double pavilionLineAngleInRadions = (Math.PI/2) + Math.toRadians(pavilionLineAngle);
         		
         		//Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
         		Point2D CenterofDiameter = new Point2D(CenterOfDiamond.getX(), CenterOfDiamond.getY());
@@ -171,11 +178,6 @@ public class DrawingDiamondWithPercentageInputs extends Application {
         		
         		topLineMidPoints = canvas.getTwoMidPointsForLine(tableLeft.getX(), tableLeft.getY(), tableRight.getX(), tableRight.getY());
         		
-        		// right angle line
-        		
-        		
-        		// left angle line
-        		
         		
         		// for girdle facets
         		firstMiddleLineMidPoints = canvas.getTwoMidPointsForLine(CenterofDiameter.getX() - radius, CenterofDiameter.getY() - girdleHeightInPixels, CenterofDiameter.getX() + radius, CenterofDiameter.getY() - girdleHeightInPixels);
@@ -224,11 +226,11 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 					*/
         		double centerX = CenterofDiameter.getX();
         		double centerY = CenterofDiameter.getY();
-        		double distance = Double.valueOf(txtDistance.getText());
-        		double leftPointX =  centerX + 1000 * Math.sin(lineAngleInRadions) + (distance) * Math.cos(lineAngleInRadions);
-        		double leftPointY =  centerY - 1000 * Math.cos(lineAngleInRadions) + (distance) * Math.sin(lineAngleInRadions);
-        		double rightPointX =  centerX - 1000 * Math.sin(lineAngleInRadions) + (distance) * Math.cos(lineAngleInRadions);
-        		double rightPointY =  centerY + 1000 * Math.cos(lineAngleInRadions) + (distance) * Math.sin(lineAngleInRadions);
+        		double distance = Double.valueOf(txtDistanceCrown.getText());
+        		double leftPointXCrown =  centerX + 1000 * Math.sin(crownLineAngleInRadions) + (distance) * Math.cos(crownLineAngleInRadions);
+        		double leftPointYCrown =  centerY - 1000 * Math.cos(crownLineAngleInRadions) + (distance) * Math.sin(crownLineAngleInRadions);
+        		double rightPointXCrown =  centerX - 1000 * Math.sin(crownLineAngleInRadions) + (distance) * Math.cos(crownLineAngleInRadions);
+        		double rightPointYCrown =  centerY + 1000 * Math.cos(crownLineAngleInRadions) + (distance) * Math.sin(crownLineAngleInRadions);
         //		Point2D actualCuttingLineRightEndPoint = new Point2D(( centerX +  Double.valueOf(txtDistance.getText()) * 0.85) - (20* Math.cos(lineAngleInRadions) / Math.sin(lineAngleInRadions)), Double.valueOf(txtDistance.getText()) * 0.85);
         //		Point2D actualCuttingLineRightEndPoint2 = new Point2D((CenterofDiameter.getX() + Double.valueOf(txtDistance.getText()) * 0.85) + ((scene.getHeight()/2) * -Math.cos(lineAngleInRadions) / -Math.sin(lineAngleInRadions)), scene.getHeight() +  Double.valueOf(txtDistance.getText()) * 0.85);
         		
@@ -243,9 +245,21 @@ public class DrawingDiamondWithPercentageInputs extends Application {
         //		gc.strokeLine(CenterofDiameter.getX() + Double.valueOf(txtDistance.getText()) * 0.85, CenterofDiameter.getY() - Double.valueOf(txtDistance.getText()) * 0.85, actualCuttingLineRightEndPoint.getX() + Double.valueOf(txtDistance.getText()) * 0.85, actualCuttingLineRightEndPoint.getY() -  Double.valueOf(txtDistance.getText()) * 0.85);
         		//gc.strokeLine(CenterofDiameter.getX(), CenterofDiameter.getY(), actualCuttingLineLeftEndPoint2.getX(), actualCuttingLineLeftEndPoint2.getY());
         //		gc.strokeLine(CenterofDiameter.getX() + Double.valueOf(txtDistance.getText()) * 0.85, CenterofDiameter.getY() - Double.valueOf(txtDistance.getText()) * 0.85, actualCuttingLineRightEndPoint2.getX() + Double.valueOf(txtDistance.getText()) * 0.85, actualCuttingLineRightEndPoint2.getY() - Double.valueOf(txtDistance.getText()) * 0.85);
+        		
+        		// Orange Line for angle according to cutting (Crown)
         		gc.setStroke(Color.ORANGE);
-        		// Orange Line for angle according to cutting
-        		gc.strokeLine(leftPointX, leftPointY, rightPointX, rightPointY);
+        		gc.strokeLine(leftPointXCrown, leftPointYCrown, rightPointXCrown, rightPointYCrown);
+        		
+        		// Violet Line for angle according to cutting (Pavilion)
+        		gc.setStroke(Color.DARKVIOLET);
+        		double distancePav = Double.valueOf(txtDistancePavilion.getText());
+        		double leftPointXPav =  centerX + 1000 * Math.sin(pavilionLineAngleInRadions) + (distancePav) * Math.cos(pavilionLineAngleInRadions);
+        		double leftPointYPav =  centerY - 1000 * Math.cos(pavilionLineAngleInRadions) + (distancePav) * Math.sin(pavilionLineAngleInRadions);
+        		double rightPointXPav =  centerX - 1000 * Math.sin(pavilionLineAngleInRadions) + (distancePav) * Math.cos(pavilionLineAngleInRadions);
+        		double rightPointYPav =  centerY + 1000 * Math.cos(pavilionLineAngleInRadions) + (distancePav) * Math.sin(pavilionLineAngleInRadions);
+        		gc.strokeLine(leftPointXPav, leftPointYPav, rightPointXPav, rightPointYPav);
+        		
+        		
         		
         		
     		});
@@ -279,16 +293,20 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 				restrictNumberOnly(txtGirdleHeight);
 				restrictNumberOnly(txtCrownAngle);
 				restrictNumberOnly(txtPavilionAngle);
-				restrictNumberOnly(txtLineAngle);
+				restrictNumberOnly(txtCrownLineAngle);
 				
 				mouseScrollWheelFunctionality(txtDiameter);
 				mouseScrollWheelFunctionality(txtCrownHeight);
 				mouseScrollWheelFunctionality(txtGirdleHeight);
 				mouseScrollWheelFunctionality(txtCrownAngle);
 				mouseScrollWheelFunctionality(txtPavilionAngle);
-				mouseScrollWheelFunctionality(txtLineAngle);
-				specialMethodForDistance(txtDistance);
-				mouseScrollWheelFunctionality(txtDistance);
+				mouseScrollWheelFunctionality(txtCrownLineAngle);
+				mouseScrollWheelFunctionality(txtPavilionLineAngle);
+				mouseScrollWheelFunctionality(txtDistanceCrown);
+				mouseScrollWheelFunctionality(txtDistancePavilion);
+				specialMethodForDistance(txtDistanceCrown);
+				specialMethodForDistance(txtDistancePavilion);
+				
 				Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
 				stackOfNewDiamond.add(Center);
 				changedParametersRedraw(txtDiameter,stackOfNewDiamond.peek());
@@ -296,8 +314,11 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 				changedParametersRedraw(txtGirdleHeight,stackOfNewDiamond.peek());
 				changedParametersRedraw(txtCrownAngle,stackOfNewDiamond.peek());
 				changedParametersRedraw(txtPavilionAngle,stackOfNewDiamond.peek());
-				changedParametersRedraw(txtLineAngle,stackOfNewDiamond.peek());
-				changedParametersRedrawSpecialForDistance(txtDistance,stackOfNewDiamond.peek());
+				changedParametersRedraw(txtCrownLineAngle,stackOfNewDiamond.peek());
+				changedParametersRedraw(txtPavilionLineAngle,stackOfNewDiamond.peek());
+
+				changedParametersRedrawSpecialForDistance(txtDistanceCrown,stackOfNewDiamond.peek());
+				changedParametersRedrawSpecialForDistance(txtDistancePavilion,stackOfNewDiamond.peek());
 				// This boolean binding is to ensure no null entries in input parameter fields
 				BooleanBinding bb = new BooleanBinding() {
 					{
@@ -450,8 +471,10 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 							changedParametersRedraw(txtGirdleHeight,stackOfNewDiamond.peek());
 							changedParametersRedraw(txtCrownAngle,stackOfNewDiamond.peek());
 							changedParametersRedraw(txtPavilionAngle,stackOfNewDiamond.peek());
-							changedParametersRedraw(txtLineAngle,stackOfNewDiamond.peek());
-							changedParametersRedrawSpecialForDistance(txtDistance,stackOfNewDiamond.peek());
+							changedParametersRedraw(txtCrownLineAngle,stackOfNewDiamond.peek());
+							changedParametersRedraw(txtPavilionLineAngle,stackOfNewDiamond.peek());
+							changedParametersRedrawSpecialForDistance(txtDistanceCrown,stackOfNewDiamond.peek());
+							changedParametersRedrawSpecialForDistance(txtDistancePavilion,stackOfNewDiamond.peek());
 							System.out.println("----------------------------------");
 							for(Point2D element: stackOfClicks) {
 								
@@ -533,7 +556,7 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		// Method for processing size changes of stage(Maximize/Minimize/Drag)
 		public void process(Point2D center,Point2D oldSize ,Point2D newSize, Stage primaryStage) throws InterruptedException {
 			
-			Thread.sleep(5);
+			Thread.sleep(3);
 	        //final String title = String.format("Width: %.0f Height: %.0f", center.getX(), center.getY());
 	        Platform.runLater(() -> {
 	        	gc.clearRect(0, 0, 5000, 5000);
@@ -573,8 +596,8 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		public void redrawAtCenter() {
 			Platform.runLater(()->{
 
-				gc.clearRect(0, 0, 5000, 5000);
-				canvas.generateLines();
+//				gc.clearRect(0, 0, 5000, 5000);
+//				canvas.generateLines();
 				
 				
 				Point2D Center = new Point2D(scene.getWidth()/2, scene.getHeight()/2);
@@ -598,9 +621,9 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 						changedParametersRedraw(txtGirdleHeight,stackOfNewDiamond.peek());
 						changedParametersRedraw(txtCrownAngle,stackOfNewDiamond.peek());
 						changedParametersRedraw(txtPavilionAngle,stackOfNewDiamond.peek());
-						changedParametersRedraw(txtLineAngle,stackOfNewDiamond.peek());
-						changedParametersRedrawSpecialForDistance(txtDistance,stackOfNewDiamond.peek());
-						
+						changedParametersRedraw(txtCrownLineAngle,stackOfNewDiamond.peek());
+						changedParametersRedrawSpecialForDistance(txtDistanceCrown,stackOfNewDiamond.peek());
+						changedParametersRedrawSpecialForDistance(txtDistancePavilion,stackOfNewDiamond.peek());
 						
 					}};
 				scene.widthProperty().addListener(listener);
@@ -628,7 +651,9 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		hbCrownAngle.setSpacing(7);
 		hbPavilionAngle.setSpacing(5);
 		hbButtons.setSpacing(5);
-		hbLineAngle.setSpacing(25);
+		hbCrownLineAngle.setSpacing(20);
+		hbPavilionLineAngle.setSpacing(13);
+		hbDistanceCrown.setSpacing(5);
 		vbDiamondProperties.setSpacing(3);
 		txtDiameter.setPromptText("In Microns");
 		txtCrownHeight.setPromptText("In percentage to total height");
@@ -640,15 +665,19 @@ public class DrawingDiamondWithPercentageInputs extends Application {
 		txtGirdleHeight.setText("10");
 		txtCrownAngle.setText("45");
 		txtPavilionAngle.setText("45");
-		txtLineAngle.setText("45");
-		txtDistance.setText("0");
+		txtCrownLineAngle.setText("45");
+		txtPavilionLineAngle.setText("45");
+		txtDistanceCrown.setText("0");
+		txtDistancePavilion.setText("0");
 		txtDiameter.setPrefWidth(165);
 		txtCrownHeight.setPrefWidth(165);
 		txtGirdleHeight.setPrefWidth(165);
 		txtCrownAngle.setPrefWidth(165);
 		txtPavilionAngle.setPrefWidth(165);
-		txtLineAngle.setPrefWidth(165);
-		txtDistance.setPrefWidth(165);
+		txtCrownLineAngle.setPrefWidth(165);
+		txtPavilionLineAngle.setPrefWidth(165);
+		txtDistanceCrown.setPrefWidth(165);
+		txtDistancePavilion.setPrefWidth(165);
 		root.getChildren().add(canvas);
 		root.setLeft(vbDiamondProperties);
 		//root.setCenter(canvas);
